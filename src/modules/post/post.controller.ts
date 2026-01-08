@@ -1,0 +1,108 @@
+import { Request, Response } from "express";
+import { postService } from "./post.service";
+import { boolean, success } from "better-auth/*";
+import { stat } from "node:fs";
+import { PostType } from "../../../generated/prisma/enums";
+import { paginationHelper, PaginationType } from "../../helper/helper";
+import { Result } from "pg";
+import { prisma } from "../../lib/prisma";
+
+const createPost = async (req: Request, res: Response) => {
+  const post = req.body;
+  // const authorId = req.user?.id;
+  const user = req.user;
+  if (!user) {
+    return "user not found";
+  }
+  try {
+    const result = await postService.createPost(post, user.id as string);
+
+    // const result = await postService.createPost(post, authorId as string);
+    res.send(result);
+  } catch (error) {
+    res.send(error);
+  }
+};
+
+const getAllPost = async (req: Request, res: Response) => {
+  try {
+    const result = await postService.getAllPost();
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Something was wrong",
+    });
+  }
+};
+
+const searchPost = async (req: Request, res: Response) => {
+  const search = req.query.search;
+  const tagsParams = req.query.tags;
+  const data = paginationHelper(req.query);
+  const tags = typeof tagsParams === "string" ? tagsParams.split(",") : [];
+  let isFeatured: boolean | undefined;
+  if (req.query.isFeatured === "true") {
+    isFeatured = true;
+  } else if (req.query.isFeatured === "false") {
+    isFeatured = false;
+  }
+  const status = req.query.status;
+  const authorId = req.query.authorId;
+  const totalItem = await prisma.post.count();
+  try {
+    const result = await postService.searchPost(
+      search as string,
+      tags,
+      isFeatured,
+      status as PostType | undefined,
+      authorId as string,
+      data.limit,
+      data.page,
+      data.skip,
+      data.sortBy,
+      data.sortOrder,
+      totalItem
+    );
+    res.status(200).json({
+      success: true,
+      data: {
+        result,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error,
+    });
+    console.log(error);
+  }
+};
+
+const getSinglePost = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  if (!id) {
+    throw new Error("Id is not available");
+  }
+  try {
+    const result = await postService.getSinglePost(id);
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error || "Something was wrong",
+    });
+  }
+};
+
+export const postController = {
+  createPost,
+  getAllPost,
+  searchPost,
+  getSinglePost,
+};
