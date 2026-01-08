@@ -91,10 +91,33 @@ const updateComment = async (req: Request, res: Response) => {
     });
   }
 };
+const moderateComment = async (req: Request, res: Response) => {
+  try {
+    console.log(req.body);
+    const payload = req.body;
+    const authorId = req.user?.id;
+    const { commentId } = req.params;
+    const result = await commentService.updateComment(
+      authorId as string,
+      commentId,
+      payload
+    );
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error || "Something was wrong",
+    });
+  }
+};
 export const commentController = {
   addComment,
   singleComment,
   commentsByAuthor,
   deleteComment,
   updateComment,
+  moderateComment,
 };

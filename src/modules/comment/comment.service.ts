@@ -96,10 +96,43 @@ const updateComment = async (
     },
   });
 };
+
+const moderateComment = async (
+  authorId: string,
+  commentId: string,
+  payload: {
+    status?: CommentStatus;
+  }
+) => {
+  console.log(payload.status);
+
+  const commentIsExits = await prisma.comment.findFirst({
+    where: {
+      id: commentId,
+      authorId,
+    },
+  });
+  if (commentIsExits?.status === payload.status) {
+    return "updated status not exist";
+  }
+  if (!commentIsExits) {
+    return "comment not found";
+  }
+
+  return await prisma.comment.update({
+    where: {
+      id: commentId,
+    },
+    data: {
+      status: payload.status,
+    },
+  });
+};
 export const commentService = {
   addComment,
   singleComment,
   commentsByAuthor,
   deleteComment,
   updateComment,
+  moderateComment,
 };
