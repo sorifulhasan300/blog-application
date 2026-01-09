@@ -144,6 +144,30 @@ const updateOwnPost = async (req: Request, res: Response) => {
     });
   }
 };
+
+const deletePost = async (req: Request, res: Response) => {
+  const authorId = req.user?.id;
+  const { postId } = req.params;
+
+  if (!authorId) {
+    return "author id not found";
+  }
+  const isAdmin = req.user?.role === "ADMIN";
+  try {
+    const result = await postService.deletePost(postId, authorId, isAdmin);
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error || "Something was wrong",
+    });
+  }
+};
+
+
 export const postController = {
   createPost,
   getAllPost,
@@ -151,4 +175,5 @@ export const postController = {
   getSinglePost,
   myPost,
   updateOwnPost,
+  deletePost,
 };

@@ -188,7 +188,6 @@ const updateOwnPost = async (
   authorId: string,
   isAdmin: boolean
 ) => {
-  console.log(data, postId, authorId, isAdmin);
   const postData = await prisma.post.findUniqueOrThrow({
     where: {
       id: postId,
@@ -214,7 +213,37 @@ const updateOwnPost = async (
   });
 };
 
+const deletePost = async (
+  postId: string,
+  authorId: string,
+  isAdmin: boolean
+) => {
+  const postData = await prisma.post.findUniqueOrThrow({
+    where: {
+      id: postId,
+      authorId,
+    },
+    select: {
+      id: true,
+      authorId: true,
+    },
+  });
+  if (!isAdmin && postId !== postData.id) {
+    return "is this not a own post";
+  }
+  await prisma.post.delete({
+    where: {
+      id: postId,
+    },
+  });
+};
 
+const analytics = async () => {
+  const result = await prisma.$transaction(async (tx) => {
+    await tx.post.count();
+  });
+  return result;
+};
 
 export const postService = {
   createPost,
@@ -223,4 +252,6 @@ export const postService = {
   getSinglePost,
   myPost,
   updateOwnPost,
+  deletePost,
+  analytics,
 };

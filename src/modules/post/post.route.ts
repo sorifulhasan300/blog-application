@@ -22,5 +22,10 @@ router.patch(
   middleware(UserRole.ADMIN, UserRole.USER),
   postController.updateOwnPost
 );
+router.delete(
+  "/:postId",
+  middleware(UserRole.ADMIN, UserRole.USER),
+  postController.updateOwnPost
+);
 
 export const postRouter = router;
