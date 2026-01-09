@@ -182,10 +182,45 @@ const myPost = async (authorId: string) => {
   };
 };
 
+const updateOwnPost = async (
+  data: Partial<Post>,
+  postId: string,
+  authorId: string,
+  isAdmin: boolean
+) => {
+  console.log(data, postId, authorId, isAdmin);
+  const postData = await prisma.post.findUniqueOrThrow({
+    where: {
+      id: postId,
+      authorId,
+    },
+    select: {
+      id: true,
+      authorId: true,
+    },
+  });
+  if (!isAdmin && postData.authorId !== authorId) {
+    return "author id not match";
+  }
+  if (!isAdmin) {
+    delete data.isFeatured;
+  }
+  return await prisma.post.update({
+    where: {
+      id: postId,
+      authorId,
+    },
+    data,
+  });
+};
+
+
+
 export const postService = {
   createPost,
   getAllPost,
   searchPost,
   getSinglePost,
   myPost,
+  updateOwnPost,
 };

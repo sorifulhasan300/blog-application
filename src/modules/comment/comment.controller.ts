@@ -55,6 +55,7 @@ const deleteComment = async (req: Request, res: Response) => {
   try {
     const { commentId } = req.params;
     const authorId = req.user?.id;
+    const isAdmin = req.user?.role === "ADMIN";
     const result = await commentService.deleteComment(
       commentId,
       authorId as string

@@ -10,7 +10,11 @@ router.post(
 );
 router.get("/:commentId", commentController.singleComment);
 router.get("/author/:authorId", commentController.commentsByAuthor);
-router.delete("/:commentId", commentController.deleteComment);
+router.delete(
+  "/:commentId",
+  middleware(UserRole.ADMIN),
+  commentController.deleteComment
+);
 
 router.patch(
   "/:commentId",

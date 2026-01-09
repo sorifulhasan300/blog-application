@@ -17,5 +17,10 @@ router.get(
   middleware(UserRole.ADMIN, UserRole.USER),
   postController.myPost
 );
+router.patch(
+  "/:postId",
+  middleware(UserRole.ADMIN, UserRole.USER),
+  postController.updateOwnPost
+);
 
 export const postRouter = router;
