@@ -12,5 +12,10 @@ router.post(
 router.get("/all", postController.getAllPost);
 router.get("/search", postController.searchPost);
 router.get("/:id", postController.getSinglePost);
+router.get(
+  "/",
+  middleware(UserRole.ADMIN, UserRole.USER),
+  postController.myPost
+);
 
 export const postRouter = router;

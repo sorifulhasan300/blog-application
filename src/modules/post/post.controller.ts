@@ -100,9 +100,27 @@ const getSinglePost = async (req: Request, res: Response) => {
   }
 };
 
+const myPost = async (req: Request, res: Response) => {
+  const authorId = req.user?.id;
+  console.log("author id", authorId);
+  try {
+    const result = await postService.myPost(authorId as string);
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error || "Something was wrong",
+    });
+  }
+};
+
 export const postController = {
   createPost,
   getAllPost,
   searchPost,
   getSinglePost,
+  myPost,
 };
