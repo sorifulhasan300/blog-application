@@ -28,4 +28,6 @@ router.delete(
   postController.updateOwnPost
 );
 
+router.get("/analytics/stats", postController.analytics);
+
 export const postRouter = router;

@@ -1,3 +1,15 @@
+-- CreateEnum
+CREATE TYPE "Role" AS ENUM ('USER', 'ADMIN');
+
+-- CreateEnum
+CREATE TYPE "Status" AS ENUM ('ACTIVE', 'BLOCKED');
+
+-- CreateEnum
+CREATE TYPE "CommentStatus" AS ENUM ('APPROVED', 'REJECTED');
+
+-- CreateEnum
+CREATE TYPE "PostType" AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
+
 -- CreateTable
 CREATE TABLE "user" (
     "id" TEXT NOT NULL,
@@ -7,6 +19,9 @@ CREATE TABLE "user" (
     "image" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "role" "Role" NOT NULL DEFAULT 'USER',
+    "phone" TEXT,
+    "status" "Status" NOT NULL DEFAULT 'ACTIVE',
 
     CONSTRAINT "user_pkey" PRIMARY KEY ("id")
 );
@@ -56,6 +71,37 @@ CREATE TABLE "verification" (
     CONSTRAINT "verification_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "comments" (
+    "id" TEXT NOT NULL,
+    "content" TEXT NOT NULL,
+    "authorId" TEXT,
+    "postId" TEXT NOT NULL,
+    "parentId" TEXT,
+    "status" "CommentStatus" NOT NULL DEFAULT 'APPROVED',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "comments_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "posts" (
+    "id" TEXT NOT NULL,
+    "title" VARCHAR(225) NOT NULL,
+    "content" TEXT,
+    "thumbnail" TEXT,
+    "isFeatured" BOOLEAN NOT NULL DEFAULT false,
+    "status" "PostType" NOT NULL DEFAULT 'APPROVED',
+    "tags" TEXT[],
+    "views" INTEGER NOT NULL DEFAULT 0,
+    "authorId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "posts_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "user_email_key" ON "user"("email");
 
@@ -71,8 +117,23 @@ CREATE INDEX "account_userId_idx" ON "account"("userId");
 -- CreateIndex
 CREATE INDEX "verification_identifier_idx" ON "verification"("identifier");
 
+-- CreateIndex
+CREATE INDEX "comments_postId_idx" ON "comments"("postId");
+
+-- CreateIndex
+CREATE INDEX "comments_authorId_idx" ON "comments"("authorId");
+
+-- CreateIndex
+CREATE INDEX "posts_authorId_idx" ON "posts"("authorId");
+
 -- AddForeignKey
 ALTER TABLE "session" ADD CONSTRAINT "session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "account" ADD CONSTRAINT "account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "comments" ADD CONSTRAINT "comments_postId_fkey" FOREIGN KEY ("postId") REFERENCES "posts"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "comments" ADD CONSTRAINT "comments_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "comments"("id") ON DELETE CASCADE ON UPDATE CASCADE;

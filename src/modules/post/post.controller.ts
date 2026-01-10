@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { postService } from "./post.service";
 import { boolean, success } from "better-auth/*";
 import { stat } from "node:fs";
@@ -7,7 +7,7 @@ import { paginationHelper, PaginationType } from "../../helper/helper";
 import { Result } from "pg";
 import { prisma } from "../../lib/prisma";
 
-const createPost = async (req: Request, res: Response) => {
+const createPost = async (req: Request, res: Response, next: NextFunction) => {
   const post = req.body;
   // const authorId = req.user?.id;
   const user = req.user;
@@ -20,7 +20,7 @@ const createPost = async (req: Request, res: Response) => {
     // const result = await postService.createPost(post, authorId as string);
     res.send(result);
   } catch (error) {
-    res.send(error);
+    next(error);
   }
 };
 
@@ -167,6 +167,20 @@ const deletePost = async (req: Request, res: Response) => {
   }
 };
 
+const analytics = async (req: Request, res: Response) => {
+  try {
+    const result = await postService.analytics();
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error || "Something was wrong",
+    });
+  }
+};
 
 export const postController = {
   createPost,
@@ -176,4 +190,5 @@ export const postController = {
   myPost,
   updateOwnPost,
   deletePost,
+  analytics,
 };

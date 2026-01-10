@@ -1,7 +1,7 @@
 import { includes } from "better-auth/*";
-import { Post, PostType } from "../../../generated/prisma/client";
 import { PostWhereInput } from "../../../generated/prisma/models";
 import { prisma } from "../../lib/prisma";
+import { CommentStatus, Post, PostType } from "../../../generated/prisma/browser";
 
 const createPost = async (
   data: Omit<Post, "id" | "createdAt" | "updatedAt">,
@@ -239,10 +239,33 @@ const deletePost = async (
 };
 
 const analytics = async () => {
-  const result = await prisma.$transaction(async (tx) => {
-    await tx.post.count();
+  return await prisma.$transaction(async (tx) => {
+    const [
+      totalPosts,
+      totalComments,
+      totalApprovedPost,
+      totalApprovedComments,
+    ] = await Promise.all([
+      await tx.post.count(),
+      await tx.comment.count(),
+      await tx.post.count({
+        where: {
+          status: PostType.APPROVED,
+        },
+      }),
+      await tx.comment.count({
+        where: {
+          status: CommentStatus.APPROVED,
+        },
+      }),
+    ]);
+    return {
+      totalPosts,
+      totalComments,
+      totalApprovedPost,
+      totalApprovedComments,
+    };
   });
-  return result;
 };
 
 export const postService = {
