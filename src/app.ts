@@ -3,7 +3,8 @@ import router from "./route";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth";
 import cors from "cors";
-import errorHandler from "./middlewares/errorHandler";
+import { NotFoundMiddleware } from "./middlewares/not-found";
+import { errorHandler } from "./middlewares/error.middleware";
 
 const app = express();
 app.use(
@@ -15,8 +16,10 @@ app.use(
 app.use(express.json());
 router.all("/api/auth/*splat", toNodeHandler(auth));
 app.use("/", router);
-app.use(errorHandler);
 app.get("/", (req, res) => {
   res.send("hello world");
 });
+app.use(NotFoundMiddleware);
+app.use(errorHandler);
+
 export default app;

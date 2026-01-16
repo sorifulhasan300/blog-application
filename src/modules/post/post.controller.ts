@@ -16,8 +16,6 @@ const createPost = async (req: Request, res: Response, next: NextFunction) => {
   }
   try {
     const result = await postService.createPost(post, user.id as string);
-
-    // const result = await postService.createPost(post, authorId as string);
     res.send(result);
   } catch (error) {
     next(error);
@@ -81,7 +79,11 @@ const searchPost = async (req: Request, res: Response) => {
   }
 };
 
-const getSinglePost = async (req: Request, res: Response) => {
+const getSinglePost = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { id } = req.params;
   if (!id) {
     throw new Error("Id is not available");
@@ -93,10 +95,7 @@ const getSinglePost = async (req: Request, res: Response) => {
       data: result,
     });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error || "Something was wrong",
-    });
+    next(error);
   }
 };
 
